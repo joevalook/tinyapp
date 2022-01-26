@@ -28,8 +28,14 @@ function findEmail(email) {
   } return false;
 }
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: {
+      longURL: "https://www.tsn.ca",
+      userID: "aJ48lW"
+  },
+  i3BoGr: {
+      longURL: "https://www.google.ca",
+      userID: "aJ48lW"
+  }
 };
 const users = {
   "userRandomID": {
@@ -68,12 +74,15 @@ app.post("/urls", (req, res) => {
   if (req.cookies.user) {
     console.log(req.body);  // Log the POST request body to the console
     let a = generateRandomString();
-    urlDatabase[a] = req.body.longURL;
+    urlDatabase[a] = {}
+    urlDatabase[a]["longURL"] = req.body.longURL;
+    urlDatabase[a]["UserID"] = req.cookies.user["id"]
+    console.log(urlDatabase);
     res.redirect('http://localhost:8080/urls/' + a);
   }
   else {
     return res.status(403).send({
-      message: 'Error 403: You need to log in first to make this requeset'
+      message: 'Error 403: You need to log in first to make this request'
     });
   }
 });
@@ -92,12 +101,12 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { user: req.cookies.user, shortURL: req.params.shortURL, userdat: users, longURL: urlDatabase[req.params.shortURL] };
+  const templateVars = { user: req.cookies.user, shortURL: req.params.shortURL, userdat: users, longURL: urlDatabase[req.params.shortURL]["longURL"] };
   res.render("urls_show", templateVars);
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  res.redirect(urlDatabase[req.params.shortURL]);
+  res.redirect(urlDatabase[req.params.shortURL].longURL);
 });
 
 
@@ -107,8 +116,14 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 app.post("/urls/:shortURL", (req, res) => {
-  urlDatabase[req.params.shortURL] = req.body.longURL;
-  res.redirect("http://localhost:8080/urls");
+  if (req.cookies.user) {
+    urlDatabase[req.params.shortURL].longURL = req.body.longURL;
+    res.redirect("http://localhost:8080/urls");
+  } else {
+    return res.status(403).send({
+      message: 'Error 403: You need to log in first to make this request'
+    });
+  }
 });
 
 app.get("/login", (req, res) => {

@@ -1,20 +1,14 @@
-const users = { 
-  "userRandomID": {
-    id: "userRandomID", 
-    email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
+const urlDatabase = {
+  b6UTxQ: {
+      longURL: "https://www.tsn.ca",
+      userID: "aJ48lW"
   },
- "user2RandomID": {
-    id: "user2RandomID", 
-    email: "user2@example.com", 
-    password: "dishwasher-funk"
+  i3BoGr: {
+      longURL: "https://www.google.ca",
+      userID: "aJ48lW"
   }
-}
+};
 
-function emailCheck(email) {
-  for (let user in users) {
-    console.log(users[user].email);
-  }
+for (let user in urlDatabase) {
+  console.log (urlDatabase[user]["longURL"])
 }
-
-emailCheck('to');
