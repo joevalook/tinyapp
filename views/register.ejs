@@ -3,7 +3,7 @@
 <head>
   <!-- Bootstrap CSS -->
   <%- include('partials/_bootstrap'); %>
-  <title>URL - TinyApp Example</title>
+  <title>TinyApp Registration</title>
 </head>
 <body>
   <%- include('partials/_header'); %>
@@ -11,9 +11,11 @@
       <div class="card-header"></div>
       <div class="card-body">
         <h2 class="card-title">Welcome to TinyApp</h2>
-        <p class="card-text">the new way to make long URLS short and manageable </p>
+        <p class="card-text"><i>The New Way to Make Long URLS Short and Manageable</i></p>
+      </div>
       </div>
         <div style = "margin: auto; margin-bottom: 30px; width: 600px; background-color:lightgray; padding: 20px;">
+          <h3 style = "padding-bottom: 20px; text-align: center;">Registration</h3>
           <form action="/register" method="POST">
             <div class="mb-3">  
               <label for="email" > Email Address </label>
@@ -25,11 +27,13 @@
               <input type="password" class="form-control" name = "password" aria-describedby="passwordHelp">
               <div id="passwordHelp" class="form-text">We'll never ask for your password via email.</div>
             </div>
-            <div class="mb-3 form-check">
-              <input type="checkbox" class="form-check-input" name = "loginNow">
-              <label class="form-check-label" for="loginNow">Log me in</label>
-            </div>
+            <div style = "text-align: center;">
+              <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" name = "loginNow">
+                <label class="form-check-label" for="loginNow">Log me in</label>
+              </div>
               <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
           </form>
         </div>
     <div class="card-footer text-muted"></div>

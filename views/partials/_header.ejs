@@ -18,11 +18,18 @@
             </div>
           </form>
         <% } else { %>  
-          <form class="form-inline" action="/login" method="POST">
-            <div class="form-group mb-2">
-              <label for="username">Enter your username:</label>
-              <input class="form-control" type="text" name="username" placeholder="username" style="width: 300px; margin: 1em">
-              <button type="submit" class="btn btn-primary">Submit</button>
+          <form class="form-inline" action="/register" method="GET">
+            <div class="mb-3"></div>
+              <div class="form-group mb-2">
+                <label for="login"><b>New to TinyApp?</b> </label>
+                <button type="submit" class="btn btn-primary" style = "margin-left: 20px;"> Register</button>
+              </div>
+            </form>
+            <form class="form-inline" action="/login" method="GET">
+              <div class="form-group mb-2">
+                <label for="login"><b>Have an Account?</b> </label>
+                <button type="submit" class="btn btn-primary" style = "margin-left: 20px;">Log In</button>
+              </div>
             </div>
           </form>
         <% } %> 

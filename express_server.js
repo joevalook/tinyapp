@@ -19,6 +19,14 @@ function generateRandomString() {
   }
   return result;
 }
+
+function uniqueEmail(email) {
+  for (let user in users) {
+    if (email === users[user].email) {
+      return false
+    }
+  } return true
+}
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -38,7 +46,7 @@ const users = {
 
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.redirect("http://localhost:8080/urls");
 });
 
 app.listen(PORT, () => {
@@ -91,13 +99,21 @@ app.post("/urls/:shortURL", (req, res) => {
   res.redirect("http://localhost:8080/urls");
 });
 
+app.get("/login", (req, res) => {
+  const templateVars = {
+    user: req.cookies.user,
+    userdat:users
+  };
+  res.render("login", templateVars);
+});
+
 app.post("/login", (req, res) => {
   res.cookie("username", req.body.username);
   res.redirect("http://localhost:8080/urls");
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
+  res.clearCookie("user");
   res.redirect("http://localhost:8080/urls");
 });
 
@@ -106,11 +122,21 @@ app.get("/register", (req, res) => {
     user: req.cookies.user,
     userdat:users
   };
-  res.render("urls_registration", templateVars);
+  res.render("register", templateVars);
 });
 
 app.post("/register", (req, res) => {
-  
+  console.log(req.body.email);
+  if (req.body.email === '' || req.body.password === '') {
+    return res.status(400).send({
+      message: 'Error 400: You must fill in both the username and password!'
+   });
+  }
+  if (!uniqueEmail (req.body.email)) {
+    return res.status(400).send({
+      message: 'Error 400: That email is already registered!'
+    });
+  }
   let a = generateRandomString();
   users[a] = req.body
   users[a]["id"] = a
