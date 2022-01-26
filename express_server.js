@@ -23,7 +23,7 @@ function generateRandomString() {
 function findEmail(email) {
   for (let user in users) {
     if (email === users[user].email) {
-      return users[user]
+      return users[user];
     }
   } return false;
 }
@@ -31,18 +31,18 @@ const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
-const users = { 
+const users = {
   "userRandomID": {
-    id: "userRandomID", 
-    email: "user@example.com", 
+    id: "userRandomID",
+    email: "user@example.com",
     password: "purple-monkey-dinosaur"
   },
- "user2RandomID": {
-    id: "user2RandomID", 
-    email: "user2@example.com", 
+  "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
     password: "dishwasher-funk"
   }
-}
+};
 
 
 app.get("/", (req, res) => {
@@ -60,27 +60,39 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, user: req.cookies.user, userdat:users };
+  const templateVars = { urls: urlDatabase, user: req.cookies.user, userdat: users };
   res.render("urls_index", templateVars);
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
-  let a = generateRandomString();
-  urlDatabase[a] = req.body.longURL;
-  res.redirect('http://localhost:8080/urls/' + a);
+  if (req.cookies.user) {
+    console.log(req.body);  // Log the POST request body to the console
+    let a = generateRandomString();
+    urlDatabase[a] = req.body.longURL;
+    res.redirect('http://localhost:8080/urls/' + a);
+  }
+  else {
+    return res.status(403).send({
+      message: 'Error 403: You need to log in first to make this requeset'
+    });
+  }
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = {
-    user: req.cookies.user,
-    userdat:users
-  };
-  res.render("urls_new", templateVars);
+  if (req.cookies.user) {
+    const templateVars = {
+      user: req.cookies.user,
+      userdat: users
+    };
+    res.render("urls_new", templateVars);
+  }
+  else {
+    res.redirect("http://localhost:8080/login");
+  }
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { user: req.cookies.user, shortURL: req.params.shortURL, userdat:users, longURL: urlDatabase[req.params.shortURL] };
+  const templateVars = { user: req.cookies.user, shortURL: req.params.shortURL, userdat: users, longURL: urlDatabase[req.params.shortURL] };
   res.render("urls_show", templateVars);
 });
 
@@ -103,10 +115,10 @@ app.get("/login", (req, res) => {
   if (req.cookies.user) {
     res.redirect("http://localhost:8080/urls");
   }
-  else{
+  else {
     const templateVars = {
       user: req.cookies.user,
-      userdat:users
+      userdat: users
     };
     res.render("login", templateVars);
   }
@@ -114,10 +126,10 @@ app.get("/login", (req, res) => {
 
 app.post("/login", (req, res) => {
   if (findEmail(req.body.email)) {
-    if (req.body.password === findEmail(req.body.email)["password"]){
+    if (req.body.password === findEmail(req.body.email)["password"]) {
       res.cookie("user", findEmail(req.body.email));
       res.redirect("http://localhost:8080/urls");
-    } 
+    }
     else {
       return res.status(403).send({
         message: 'Error 403: Incorrect Password'
@@ -140,10 +152,10 @@ app.get("/register", (req, res) => {
   if (req.cookies.user) {
     res.redirect("http://localhost:8080/urls");
   }
-  else{
+  else {
     const templateVars = {
       user: req.cookies.user,
-      userdat:users
+      userdat: users
     };
     res.render("register", templateVars);
   }
@@ -154,16 +166,16 @@ app.post("/register", (req, res) => {
   if (req.body.email === '' || req.body.password === '') {
     return res.status(400).send({
       message: 'Error 400: You must fill in both the username and password!'
-   });
+    });
   }
-  if (findEmail (req.body.email)) {
+  if (findEmail(req.body.email)) {
     return res.status(400).send({
       message: 'Error 400: That email is already registered!'
     });
   }
   let a = generateRandomString();
-  users[a] = req.body
-  users[a]["id"] = a
+  users[a] = req.body;
+  users[a]["id"] = a;
   console.log(users);
   if (req.body.loginNow === 'on') {
     res.cookie("user", users[a]);
