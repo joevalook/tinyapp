@@ -20,12 +20,12 @@ function generateRandomString() {
   return result;
 }
 
-function uniqueEmail(email) {
+function findEmail(email) {
   for (let user in users) {
     if (email === users[user].email) {
-      return false
+      return users[user]
     }
-  } return true
+  } return false;
 }
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -108,8 +108,22 @@ app.get("/login", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username);
-  res.redirect("http://localhost:8080/urls");
+  if (findEmail(req.body.email)) {
+    if (req.body.password === findEmail(req.body.email)["password"]){
+      res.cookie("user", findEmail(req.body.email));
+      res.redirect("http://localhost:8080/urls");
+    } 
+    else {
+      return res.status(403).send({
+        message: 'Error 403: Incorrect Password'
+      });
+    }
+  }
+  else {
+    return res.status(403).send({
+      message: 'Error 403: That email is not registered.'
+    });
+  }
 });
 
 app.post("/logout", (req, res) => {
@@ -132,7 +146,7 @@ app.post("/register", (req, res) => {
       message: 'Error 400: You must fill in both the username and password!'
    });
   }
-  if (!uniqueEmail (req.body.email)) {
+  if (findEmail (req.body.email)) {
     return res.status(400).send({
       message: 'Error 400: That email is already registered!'
     });
