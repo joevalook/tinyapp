@@ -100,11 +100,16 @@ app.post("/urls/:shortURL", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  const templateVars = {
-    user: req.cookies.user,
-    userdat:users
-  };
-  res.render("login", templateVars);
+  if (req.cookies.user) {
+    res.redirect("http://localhost:8080/urls");
+  }
+  else{
+    const templateVars = {
+      user: req.cookies.user,
+      userdat:users
+    };
+    res.render("login", templateVars);
+  }
 });
 
 app.post("/login", (req, res) => {
@@ -132,11 +137,16 @@ app.post("/logout", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  const templateVars = {
-    user: req.cookies.user,
-    userdat:users
-  };
-  res.render("register", templateVars);
+  if (req.cookies.user) {
+    res.redirect("http://localhost:8080/urls");
+  }
+  else{
+    const templateVars = {
+      user: req.cookies.user,
+      userdat:users
+    };
+    res.render("register", templateVars);
+  }
 });
 
 app.post("/register", (req, res) => {
