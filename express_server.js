@@ -76,7 +76,7 @@ app.post("/urls", (req, res) => {
     let a = generateRandomString();
     urlDatabase[a] = {}
     urlDatabase[a]["longURL"] = req.body.longURL;
-    urlDatabase[a]["UserID"] = req.cookies.user["id"]
+    urlDatabase[a]["userID"] = req.cookies.user["id"]
     console.log(urlDatabase);
     res.redirect('http://localhost:8080/urls/' + a);
   }
