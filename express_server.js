@@ -101,6 +101,12 @@ app.get("/urls/new", (req, res) => {
   }
 });
 
+app.get("/urls/full", (req, res) => {
+  const templateVars = { urls: urlDatabase, user: req.cookies.user, userdat: users };
+  res.render("urls_full", templateVars);
+ 
+});
+
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { user: req.cookies.user, shortURL: req.params.shortURL, userdat: users, longURL: urlDatabase[req.params.shortURL]["longURL"] };
   res.render("urls_show", templateVars);
@@ -113,10 +119,12 @@ app.get("/u/:shortURL", (req, res) => {
 
 app.post("/urls/:shortURL/delete", (req, res) => {
   if (req.cookies.user) {
-    if(req.cookies.user === urlDatabase[req.params.shortURL].userID) {
+    if(req.cookies.user.id === urlDatabase[req.params.shortURL].userID) {
       delete urlDatabase[req.params.shortURL];
       res.redirect("http://localhost:8080/urls");
   } else {
+    // console.log(req.cookies.user);
+    // console.log(urlDatabase[req.params.shortURL]);
     return res.status(403).send({
       message: 'Error 403: You can not delete another user\'s tinyURL!'
     });
@@ -132,7 +140,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 app.post("/urls/:shortURL", (req, res) => {
   if (req.cookies.user) {
-    if(req.cookies.user === urlDatabase[req.params.shortURL].userID) {
+    if(req.cookies.user.id === urlDatabase[req.params.shortURL].userID) {
       urlDatabase[req.params.shortURL].longURL = req.body.longURL;
       res.redirect("http://localhost:8080/urls");
   } else {
