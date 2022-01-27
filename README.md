@@ -4,9 +4,11 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Final Product
 
-!["screenshot description"](#)
+!["A picture of the entire URL Database with creators of URLs"](https://github.com/joevalook/tinyapp/blob/master/docs/entire-UrlDatabase.png?raw=true)
 
-!["screenshot description"](#)
+!["A picture of the register page"](https://github.com/joevalook/tinyapp/blob/master/docs/register.png?raw=true)
+
+!["a picture of the user's URLs page"](https://github.com/joevalook/tinyapp/blob/master/docs/user-urlDatabase.png?raw=true)
 
 ## Dependencies
 
