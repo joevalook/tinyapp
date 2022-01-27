@@ -77,8 +77,8 @@ app.post("/urls", (req, res) => {
     urlDatabase[a] = {}
     urlDatabase[a]["longURL"] = req.body.longURL;
     urlDatabase[a]["userID"] = req.cookies.user["id"]
-    console.log(urlDatabase);
-    console.log(req.cookies.user)
+    //console.log(urlDatabase);
+    //console.log(req.cookies.user)
     res.redirect('http://localhost:8080/urls/' + a);
   }
   else {
@@ -112,14 +112,34 @@ app.get("/u/:shortURL", (req, res) => {
 
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase[req.params.shortURL];
-  res.redirect("http://localhost:8080/urls");
+  if (req.cookies.user) {
+    if(req.cookies.user === urlDatabase[req.params.shortURL].userID) {
+      delete urlDatabase[req.params.shortURL];
+      res.redirect("http://localhost:8080/urls");
+  } else {
+    return res.status(403).send({
+      message: 'Error 403: You can not delete another user\'s tinyURL!'
+    });
+  }
+  } else {
+    return res.status(403).send({
+      message: 'Error 403: You need to log in first to make this request'
+    });
+  }
+  
+  
 });
 
 app.post("/urls/:shortURL", (req, res) => {
   if (req.cookies.user) {
-    urlDatabase[req.params.shortURL].longURL = req.body.longURL;
-    res.redirect("http://localhost:8080/urls");
+    if(req.cookies.user === urlDatabase[req.params.shortURL].userID) {
+      urlDatabase[req.params.shortURL].longURL = req.body.longURL;
+      res.redirect("http://localhost:8080/urls");
+  } else {
+    return res.status(403).send({
+      message: 'Error 403: You can not edit another user\'s tinyURL!'
+    });
+  }
   } else {
     return res.status(403).send({
       message: 'Error 403: You need to log in first to make this request'
