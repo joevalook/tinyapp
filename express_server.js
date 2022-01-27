@@ -119,20 +119,20 @@ app.get("/urls/:shortURL", (req, res) => {
       message: 'Error 404: That short URL does not exist on this database!'
     });
   }
-  if (req.session.user.id === urlDatabase[req.params.shortURL].userID) {
+  if (!req.session.user) {
+    return res.status(401).send({
+      message: 'Error 401: You need to log in first to make this request'
+    });
+  }
+  else if (req.session.user.id === urlDatabase[req.params.shortURL].userID) {
   const templateVars = { user: req.session.user, shortURL: req.params.shortURL, userdat: users, longURL: urlDatabase[req.params.shortURL]["longURL"] };
   res.render("urls_show", templateVars);
   }
-  else if (req.session.user) {
+  else {
     console.log(req.session.user.id) 
     console.log(urlDatabase[req.params.shortURL].userID)
     return res.status(403).send({
       message: 'Error 403: You can not edit another user\'s tinyURL!'
-    });
-  }
-  else {
-    return res.status(401).send({
-      message: 'Error 401: You need to log in first to make this request'
     });
   }
 });
