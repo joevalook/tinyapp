@@ -1,5 +1,6 @@
 const express = require("express");
 const app = express();
+const {generateRandomString, findEmail} = require ("./helpers")
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const bcrypt = require('bcryptjs');
@@ -19,31 +20,14 @@ app.use(cookieSession({
 }));
 //app.use(morgan('dev'));
 
-
-function generateRandomString() {
-  let char = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-  result = '';
-  for (let i = 0; i < 6; i++) {
-    result += char[Math.floor(Math.random() * char.length)];
-  }
-  return result;
-}
-
-function findEmail(email) {
-  for (let user in users) {
-    if (email === users[user].email) {
-      return users[user];
-    }
-  } return false;
-}
 const urlDatabase = {
   b6UTxQ: {
       longURL: "https://www.tsn.ca",
-      userID: "aJ48lW"
+      userID: "userRandomID"
   },
   i3BoGr: {
       longURL: "https://www.google.ca",
-      userID: "aJ48lW"
+      userID: "userRandomID"
   }
 };
 const users = {
@@ -61,7 +45,12 @@ const users = {
 
 
 app.get("/", (req, res) => {
+  if (req.session.user) {
   res.redirect("http://localhost:8080/urls");
+  }
+  else {
+    res.redirect("http://localhost:8080/login");
+  }
 });
 
 app.listen(PORT, () => {
@@ -84,23 +73,23 @@ app.post("/urls", (req, res) => {
     console.log(req.body);  // Log the POST request body to the console
     let a = generateRandomString();
     urlDatabase[a] = {}
-    b = req.body.longURL
+    let b = req.body.longURL
     if (b.slice(0,4) === 'http') {
-      urlDatabase[a]["longURL"] = req.body.longURL;
+      urlDatabase[a]["longURL"] = b;
     }
     else if (b.slice(0,3) === 'www') {
-      urlDatabase[a]["longURL"] = "https://" + req.body.longURL;
+      urlDatabase[a]["longURL"] = "https://" + b;
     }
     else {
-      urlDatabase[a]["longURL"] = "https://www." + req.body.longURL;
+      urlDatabase[a]["longURL"] = "https://www." + b;
     }
     urlDatabase[a]["userID"] = req.session.user["id"]
     //now can allow input of https://www.google.ca and www.google.ca and google.ca, all as the same
     res.redirect('http://localhost:8080/urls/' + a);
   }
   else {
-    return res.status(403).send({
-      message: 'Error 403: You need to log in first to make this request'
+    return res.status(401).send({
+      message: 'Error 401: You need to log in first to make this request'
     });
   }
 });
@@ -125,11 +114,35 @@ app.get("/urls/full", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
+  if (!urlDatabase[req.params.shortURL]) {
+    return res.status(404).send({
+      message: 'Error 404: That short URL does not exist on this database!'
+    });
+  }
+  if (req.session.user.id === urlDatabase[req.params.shortURL].userID) {
   const templateVars = { user: req.session.user, shortURL: req.params.shortURL, userdat: users, longURL: urlDatabase[req.params.shortURL]["longURL"] };
   res.render("urls_show", templateVars);
+  }
+  else if (req.session.user) {
+    console.log(req.session.user.id) 
+    console.log(urlDatabase[req.params.shortURL].userID)
+    return res.status(403).send({
+      message: 'Error 403: You can not edit another user\'s tinyURL!'
+    });
+  }
+  else {
+    return res.status(401).send({
+      message: 'Error 401: You need to log in first to make this request'
+    });
+  }
 });
 
 app.get("/u/:shortURL", (req, res) => {
+  if (!urlDatabase[req.params.shortURL]) {
+    return res.status(404).send({
+      message: 'Error 404: That short URL does not exist on this database!'
+    });
+  }
   res.redirect(urlDatabase[req.params.shortURL].longURL);
 });
 
@@ -147,8 +160,8 @@ app.post("/urls/:shortURL/delete", (req, res) => {
     });
   }
   } else {
-    return res.status(403).send({
-      message: 'Error 403: You need to log in first to make this request'
+    return res.status(401).send({
+      message: 'Error 401: You need to log in first to make this request'
     });
   }
   
@@ -160,14 +173,14 @@ app.post("/urls/:shortURL", (req, res) => {
     if(req.session.user.id === urlDatabase[req.params.shortURL].userID) {
       urlDatabase[req.params.shortURL].longURL = req.body.longURL;
       res.redirect("http://localhost:8080/urls");
+    } else {
+      return res.status(403).send({
+        message: 'Error 403: You can not edit another user\'s tinyURL!'
+      });
+    }
   } else {
-    return res.status(403).send({
-      message: 'Error 403: You can not edit another user\'s tinyURL!'
-    });
-  }
-  } else {
-    return res.status(403).send({
-      message: 'Error 403: You need to log in first to make this request'
+    return res.status(401).send({
+      message: 'Error 401: You need to log in first to make this request'
     });
   }
 });
@@ -186,9 +199,9 @@ app.get("/login", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  if (findEmail(req.body.email)) {
-    if (bcrypt.compareSync(req.body.password,findEmail(req.body.email)["password"])) {
-      req.session["user"] =  findEmail(req.body.email);
+  if (findEmail(users, req.body.email)) {
+    if (bcrypt.compareSync(req.body.password,findEmail(users, req.body.email)["password"])) {
+      req.session["user"] =  findEmail(users, req.body.email);
       res.redirect("http://localhost:8080/urls");
     }
     else {
@@ -205,7 +218,7 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("user");
+  req.session.user = null;
   res.redirect("http://localhost:8080/urls");
 });
 
@@ -229,7 +242,7 @@ app.post("/register", (req, res) => {
       message: 'Error 400: You must fill in both the username and password!'
     });
   }
-  if (findEmail(req.body.email)) {
+  if (findEmail(users, req.body.email)) {
     return res.status(400).send({
       message: 'Error 400: That email is already registered!'
     });
