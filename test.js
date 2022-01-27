@@ -1,14 +1,6 @@
-const urlDatabase = {
-  b6UTxQ: {
-      longURL: "https://www.tsn.ca",
-      userID: "aJ48lW"
-  },
-  i3BoGr: {
-      longURL: "https://www.google.ca",
-      userID: "aJ48lW"
-  }
-};
+const bcrypt = require('bcryptjs');
+const password = "purple-monkey-dinosaur"; // found in the req.params object
+const hashedPassword = bcrypt.hashSync(password, 10);
 
-for (let user in urlDatabase) {
-  console.log (urlDatabase[user]["longURL"])
-}
+console.log(hashedPassword);
+console.log(bcrypt.compareSync(password, hashedPassword));
