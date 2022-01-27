@@ -26,4 +26,4 @@ TinyApp is a full stack web application built with Node and Express that allows 
 - Run the development web server using the `node express_server.js` command.
 - Run the development web server utilizing nodemon using the `npm start` command.
 - If not registered, you can only see the URL database and access any short URL coded website
-- Once registered and logged in, you can create URLS, see a database of the URLS you created and edit or delete URLS you created.
+- Once registered and logged in, you can create URLs, see a database of the URLs you created and edit or delete URLs you created.
