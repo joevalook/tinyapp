@@ -78,6 +78,7 @@ app.post("/urls", (req, res) => {
     urlDatabase[a]["longURL"] = req.body.longURL;
     urlDatabase[a]["userID"] = req.cookies.user["id"]
     console.log(urlDatabase);
+    console.log(req.cookies.user)
     res.redirect('http://localhost:8080/urls/' + a);
   }
   else {
