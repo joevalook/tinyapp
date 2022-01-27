@@ -7,10 +7,13 @@ const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session');
 const uuid = require('uuid/v4');
 
+
+
+// setting variables for the keys used in cookie session
 let a = uuid();
 let b = uuid();
-// setting variables for the keys used in cookie session
 
+//setting express to use body parser and cookie session, as well as setting the view engine as ejs
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 app.use(cookieSession({
@@ -18,7 +21,7 @@ app.use(cookieSession({
   keys: [a, b]
 }));
 
-
+//url database with some default URLs inputted
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
@@ -29,6 +32,8 @@ const urlDatabase = {
     userID: "userRandomID"
   }
 };
+
+//user data base with default users added. Passwords are hashed.
 const users = {
   "userRandomID": {
     id: "userRandomID",
@@ -42,7 +47,7 @@ const users = {
   }
 };
 
-
+// home page, redirects to the URLs page if a user is logged in, redirects to login page if no one is logged in
 app.get("/", (req, res) => {
   if (req.session.user) {
     res.redirect("http://localhost:8080/urls");
@@ -51,26 +56,30 @@ app.get("/", (req, res) => {
   }
 });
 
+// home page
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+//displays urlsDatabase in JSON format
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
 
+//displays page that has all of the URLs of the user if logged in. If not it displays a message prompting the user to log in to view their urls
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase, user: req.session.user, userdat: users };
   res.render("urls_index", templateVars);
 });
 
+//adds a url to the database if the user is logged in
 app.post("/urls", (req, res) => {
-  if (req.session.user) {
-    console.log(req.body);  // Log the POST request body to the console
+  if (req.session.user) {  //checks whether logged in
+    console.log(req.body);  
     let a = generateRandomString();
     urlDatabase[a] = {};
+    
+    //wanted to allow input of https://www.example.ca and www.example.ca and example.ca, and create proper input of https://www.example.ca
     let b = req.body.longURL;
     if (b.slice(0, 4) === 'http') {
       urlDatabase[a]["longURL"] = b;
@@ -80,15 +89,16 @@ app.post("/urls", (req, res) => {
       urlDatabase[a]["longURL"] = "https://www." + b;
     }
     urlDatabase[a]["userID"] = req.session.user["id"];
-    //now can allow input of https://www.google.ca and www.google.ca and google.ca, all as the same
+    
     res.redirect('http://localhost:8080/urls/' + a);
-  } else {
+  } else { // if user is not logged in, send error 401 message
     return res.status(401).send({
       message: 'Error 401: You need to log in first to make this request'
     });
   }
 });
 
+// if user is logged in it displays a page where a user can generate a random 6 character short URL for inputted long URL. redirects to login page if user is not logged in
 app.get("/urls/new", (req, res) => {
   if (req.session.user) {
     const templateVars = {
@@ -101,26 +111,29 @@ app.get("/urls/new", (req, res) => {
   }
 });
 
+// NOT PART OF INSTRUCTIONS
+// created a page available in the nav bar that shows all of the URLs in the entire database. Useful because instructions say that a user can use any short URL for the /u/:shortURL path, and therefore it would be useful to see all the available shortURLS
 app.get("/urls/full", (req, res) => {
   const templateVars = { urls: urlDatabase, user: req.session.user, userdat: users };
   res.render("urls_full", templateVars);
 
 });
 
+// If you are logged in and created the short URL queried the browser displays a page that shows information about the desired short URL. An edit form is also available, below this information.
 app.get("/urls/:shortURL", (req, res) => {
-  if (!urlDatabase[req.params.shortURL]) {
+  if (!urlDatabase[req.params.shortURL]) { //checks if shortURL exists in database
     return res.status(404).send({
       message: 'Error 404: That short URL does not exist on this database!'
     });
   }
-  if (!req.session.user) {
+  if (!req.session.user) { // checks if any user is logged in
     return res.status(401).send({
       message: 'Error 401: You need to log in first to make this request'
     });
-  } else if (req.session.user.id === urlDatabase[req.params.shortURL].userID) {
+  } else if (req.session.user.id === urlDatabase[req.params.shortURL].userID) { // checks if creator of short URL is the same as the logged in user
     const templateVars = { user: req.session.user, shortURL: req.params.shortURL, userdat: users, longURL: urlDatabase[req.params.shortURL]["longURL"] };
     res.render("urls_show", templateVars);
-  } else {
+  } else { // registered user is not creator, therefore error message is displayed
     console.log(req.session.user.id);
     console.log(urlDatabase[req.params.shortURL].userID);
     return res.status(403).send({
@@ -129,6 +142,7 @@ app.get("/urls/:shortURL", (req, res) => {
   }
 });
 
+// accesses the corresponding longURL website
 app.get("/u/:shortURL", (req, res) => {
   if (!urlDatabase[req.params.shortURL]) {
     return res.status(404).send({
@@ -138,10 +152,10 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(urlDatabase[req.params.shortURL].longURL);
 });
 
-
+//allows a user to delete a short URL from the database, if they are the creator
 app.post("/urls/:shortURL/delete", (req, res) => {
-  if (req.session.user) {
-    if (req.session.user.id === urlDatabase[req.params.shortURL].userID) {
+  if (req.session.user) { //checks if user is logged in
+    if (req.session.user.id === urlDatabase[req.params.shortURL].userID) { //checks is user is creator
       delete urlDatabase[req.params.shortURL];
       res.redirect("http://localhost:8080/urls");
     } else {
@@ -160,6 +174,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 });
 
+//if a user is the creator of the short URL, allows them to edit the short URL to refer to a different long URL
 app.post("/urls/:shortURL", (req, res) => {
   if (req.session.user) {
     if (req.session.user.id === urlDatabase[req.params.shortURL].userID) {
@@ -177,6 +192,7 @@ app.post("/urls/:shortURL", (req, res) => {
   }
 });
 
+// displays log in page with two parameters inputted: email and password
 app.get("/login", (req, res) => {
   if (req.session.user) {
     res.redirect("http://localhost:8080/urls");
@@ -189,10 +205,11 @@ app.get("/login", (req, res) => {
   }
 });
 
+// verifies user and logs them in via cookie data. Has a toggle for remember me that is not implemented yet because of insufficient knowledge
 app.post("/login", (req, res) => {
-  if (findEmail(users, req.body.email)) {
-    if (bcrypt.compareSync(req.body.password, findEmail(users, req.body.email)["password"])) {
-      req.session["user"] = findEmail(users, req.body.email);
+  if (findEmail(users, req.body.email)) { //if email is in database
+    if (bcrypt.compareSync(req.body.password, findEmail(users, req.body.email)["password"])) { //if hashed password matches hashed password on file
+      req.session["user"] = findEmail(users, req.body.email); //log in via cookie
       res.redirect("http://localhost:8080/urls");
     } else {
       return res.status(403).send({
@@ -206,13 +223,15 @@ app.post("/login", (req, res) => {
   }
 });
 
+// logs out user via clearing cookie data
 app.post("/logout", (req, res) => {
-  req.session.user = null;
+  req.session.user = null; 
   res.redirect("http://localhost:8080/urls");
 });
 
+// displays register page with two parameters inputted: email and password
 app.get("/register", (req, res) => {
-  if (req.session.user) {
+  if (req.session.user) { //if user is already logged in, redirects to urls page
     res.redirect("http://localhost:8080/urls");
   } else {
     const templateVars = {
@@ -223,8 +242,8 @@ app.get("/register", (req, res) => {
   }
 });
 
+// registers user if email and password are valid. Creates a hashed password to protect private data. Allows an option to log in right away if toggled, or to just create an account if not toggled
 app.post("/register", (req, res) => {
-  console.log(req.body.email);
   if (req.body.email === '' || req.body.password === '') {
     return res.status(400).send({
       message: 'Error 400: You must fill in both the username and password!'
@@ -235,12 +254,11 @@ app.post("/register", (req, res) => {
       message: 'Error 400: That email is already registered!'
     });
   }
-  let a = generateRandomString();
-  const hashedPassword = bcrypt.hashSync(req.body.password, 10);
+  let a = generateRandomString(); //created random ID for user
+  const hashedPassword = bcrypt.hashSync(req.body.password, 10); 
   req.body.password = hashedPassword;
   users[a] = req.body;
   users[a]["id"] = a;
-  console.log(users);
   if (req.body.loginNow === 'on') {
     req.session["user"] = users[a];
   }
