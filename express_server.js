@@ -113,9 +113,12 @@ app.post("/urls", (req, res) => {
     },
     res.redirect('http://localhost:8080/urls/' + a);
   } else { // if user is not logged in, send error 401 message
-    return res.status(401).send({
-      message: 'Error 401: You need to log in first to make this request'
-    });
+    const templateVars = {
+      errorStatus:'401 Unauthorized',
+      errorMessage: 'You need to log in first to make this request',
+    } 
+    res.status(401)
+    return res.render('error', templateVars)
   }
 });
 
@@ -146,17 +149,23 @@ app.get("/urls/full", (req, res) => {
 // If you are logged in and created the short URL queried the browser displays a page that shows information about the desired short URL. An edit form is also available, below this information.
 app.get("/urls/:shortURL", (req, res) => {
   if (!urlDatabase[req.params.shortURL]) { //checks if shortURL exists in database
-    return res.status(404).send({
-      message: 'Error 404: That short URL does not exist on this database!'
-    });
+    const templateVars = {
+      errorStatus:'404 Not Found',
+      errorMessage: 'That short URL does not exist on this database!',
+    } 
+    res.status(404)
+    return res.render('error', templateVars)
   }
   if (!req.session.user) { // checks if any user is logged in
-    return res.status(401).send({
-      message: 'Error 401: You need to log in first to make this request'
-    });
+    const templateVars = {
+      errorStatus:'401 Unauthorized',
+      errorMessage: 'You need to log in first to make this request',
+    } 
+    res.status(401)
+    return res.render('error', templateVars)
   } else if (req.session.user.id === urlDatabase[req.params.shortURL].userID) { // checks if creator of short URL is the same as the logged in user
     siteVisits[req.params.shortURL].uniqueVisits = uniqVisits(siteVisits[req.params.shortURL].timeStamps)
-    const templateVars = { 
+    const templateVars = {
       user: req.session.user,
       shortURL: req.params.shortURL,
       longURL: urlDatabase[req.params.shortURL]["longURL"],
@@ -166,18 +175,24 @@ app.get("/urls/:shortURL", (req, res) => {
   } else { // registered user is not creator, therefore error message is displayed
     console.log(req.session.user.id);
     console.log(urlDatabase[req.params.shortURL].userID);
-    return res.status(403).send({
-      message: 'Error 403: You can not edit another user\'s tinyURL!'
-    });
+    const templateVars = {
+      errorStatus:'403 Forbidden',
+      errorMessage: 'You can not edit another user\'s tinyURL!',
+    } 
+    res.status(403)
+    return res.render('error', templateVars)
   }
 });
 
 // accesses the corresponding longURL website
 app.get("/u/:shortURL", (req, res) => {
   if (!urlDatabase[req.params.shortURL]) {
-    return res.status(404).send({
-      message: 'Error 404: That short URL does not exist on this database!'
-    });
+    const templateVars = {
+      errorStatus:'404 Not Found',
+      errorMessage: 'That short URL does not exist on this database!',
+    } 
+    res.status(404)
+    return res.render('error', templateVars)
   }
   siteVisits[req.params.shortURL]["visits"] += 1;
   let user = "anonymous"
@@ -198,14 +213,20 @@ app.delete("/urls/:shortURL/delete", (req, res) => {
     } else {
       // console.log(req.session.user);
       // console.log(urlDatabase[req.params.shortURL]);
-      return res.status(403).send({
-        message: 'Error 403: You can not delete another user\'s tinyURL!'
-      });
+      const templateVars = {
+        errorStatus:'403 Forbidden',
+        errorMessage: 'You can not delete another user\'s tinyURL!',
+      } 
+      res.status(403)
+      return res.render('error', templateVars)
     }
   } else {
-    return res.status(401).send({
-      message: 'Error 401: You need to log in first to make this request'
-    });
+    const templateVars = {
+      errorStatus:'401 Unauthorized',
+      errorMessage: 'You need to log in first to make this request',
+    } 
+    res.status(401)
+    return res.render('error', templateVars)
   }
 
 
@@ -218,14 +239,20 @@ app.put("/urls/:shortURL", (req, res) => {
       urlDatabase[req.params.shortURL].longURL = makeProperUrl(req.body.longURL);
       res.redirect("http://localhost:8080/urls");
     } else {
-      return res.status(403).send({
-        message: 'Error 403: You can not edit another user\'s tinyURL!'
-      });
+      const templateVars = {
+        errorStatus:'403 Forbidden',
+        errorMessage: 'You can not edit another user\'s tinyURL!',
+      } 
+      res.status(403)
+      return res.render('error', templateVars)
     }
   } else {
-    return res.status(401).send({
-      message: 'Error 401: You need to log in first to make this request'
-    });
+    const templateVars = {
+      errorStatus:'401 Unauthorized',
+      errorMessage: 'You need to log in first to make this request',
+    } 
+    res.status(401)
+    return res.render('error', templateVars)
   }
 });
 
@@ -249,14 +276,20 @@ app.post("/login", (req, res) => {
       req.session["user"] = findEmail(users, req.body.email); //log in via cookie
       res.redirect("http://localhost:8080/urls");
     } else {
-      return res.status(403).send({
-        message: 'Error 403: Incorrect Password'
-      });
+      const templateVars = {
+        errorStatus:'403 Forbidden',
+        errorMessage: 'Incorrect Password',
+      } 
+      res.status(403)
+      return res.render('error', templateVars)
     }
   } else {
-    return res.status(403).send({
-      message: 'Error 403: That email is not registered.'
-    });
+    const templateVars = {
+      errorStatus:'403 Forbidden',
+      errorMessage: 'That email is not registered',
+    } 
+    res.status(403)
+    return res.render('error', templateVars)
   }
 });
 
@@ -282,14 +315,20 @@ app.get("/register", (req, res) => {
 // registers user if email and password are valid. Creates a hashed password to protect private data. Allows an option to log in right away if toggled, or to just create an account if not toggled
 app.post("/register", (req, res) => {
   if (req.body.email === '' || req.body.password === '') {
-    return res.status(400).send({
-      message: 'Error 400: You must fill in both the username and password!'
-    });
+    const templateVars = {
+      errorStatus:'400 Bad Request',
+      errorMessage: 'You must fill in both the username and password!',
+    } 
+    res.status(400)
+    return res.render('error', templateVars)
   }
   if (findEmail(users, req.body.email)) {
-    return res.status(400).send({
-      message: 'Error 400: That email is already registered!'
-    });
+    const templateVars = {
+      errorStatus:'400 Bad Request',
+      errorMessage: 'That email is already registered!',
+    } 
+    res.status(400)
+    return res.render('error', templateVars)
   }
   let a = generateRandomString(); //created random ID for user
   let b = generateRandomString(); //created random ID for user
