@@ -52,4 +52,13 @@ const makeProperUrl = url => {
     return url
 }
 
-module.exports = {generateRandomString, findEmail, dateNow, makeProperUrl}
+const uniqVisits = timeStamps => {
+  let a = 0
+  let b = []
+  for (let arr of timeStamps) {
+    if (b.indexOf(arr[1]) === -1) {
+      b.push(arr[1])
+    }
+  } return b.length
+}
+module.exports = {generateRandomString, findEmail, dateNow, makeProperUrl, uniqVisits}

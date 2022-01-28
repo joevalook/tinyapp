@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const { generateRandomString, findEmail, dateNow, makeProperUrl } = require("./helpers");
+const { generateRandomString, findEmail, dateNow, makeProperUrl, uniqVisits } = require("./helpers");
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const bcrypt = require('bcryptjs');
@@ -16,11 +16,13 @@ let b = uuid();
 
 let siteVisits = {
   b6UTxQ: {
+    dateCreated: "27/1/2022 @ 1:44:52", 
     visits: 0,
     uniqueVisits: 0,
     timeStamps: [["28/1/2022 @ 1:44:52", 'asdfhkj']]
   },
   i3BoGr: {
+    dateCreated:"26/1/2022 @ 1:44:52",
     visits: 0,
     uniqueVisits: 0,
     timeStamps: []
@@ -85,7 +87,10 @@ app.get("/urls.json", (req, res) => {
 
 //displays page that has all of the URLs of the user if logged in. If not it displays a message prompting the user to log in to view their urls
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, user: req.session.user };
+  for (let url in siteVisits) {
+    siteVisits[url].uniqueVisits = uniqVisits(siteVisits[url].timeStamps)
+  }
+  const templateVars = { urls: urlDatabase, user: req.session.user, siteVisits: siteVisits };
   res.render("urls_index", templateVars);
 });
 
@@ -101,6 +106,7 @@ app.post("/urls", (req, res) => {
     urlDatabase[a]["longURL"] = makeProperUrl(longUrl);
     urlDatabase[a]["userID"] = req.session.user["id"];
     siteVisits[a] = {
+      dateCreated: dateNow(),
       visits: 0,
       uniqueVisits: 0,
       timeStamps: []
@@ -129,7 +135,10 @@ app.get("/urls/new", (req, res) => {
 // NOT PART OF INSTRUCTIONS
 // created a page available in the nav bar that shows all of the URLs in the entire database. Useful because instructions say that a user can use any short URL for the /u/:shortURL path, and therefore it would be useful to see all the available shortURLS
 app.get("/urls/full", (req, res) => {
-  const templateVars = { urls: urlDatabase, user: req.session.user };
+  for (let url in siteVisits) {
+    siteVisits[url].uniqueVisits = uniqVisits(siteVisits[url].timeStamps)
+  }
+  const templateVars = { urls: urlDatabase, user: req.session.user, siteVisits: siteVisits };
   res.render("urls_full", templateVars);
 
 });
@@ -146,14 +155,7 @@ app.get("/urls/:shortURL", (req, res) => {
       message: 'Error 401: You need to log in first to make this request'
     });
   } else if (req.session.user.id === urlDatabase[req.params.shortURL].userID) { // checks if creator of short URL is the same as the logged in user
-    let a = 0
-    let b = []
-    for (let arr of siteVisits[req.params.shortURL].timeStamps) {
-      if (b.indexOf(arr[1]) === -1) {
-        b.push(arr[1])
-      }
-    }
-    siteVisits[req.params.shortURL].uniqueVisits = b.length
+    siteVisits[req.params.shortURL].uniqueVisits = uniqVisits(siteVisits[req.params.shortURL].timeStamps)
     const templateVars = { 
       user: req.session.user,
       shortURL: req.params.shortURL,
