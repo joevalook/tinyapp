@@ -6,6 +6,7 @@ const bodyParser = require("body-parser");
 const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session');
 const uuid = require('uuid/v4');
+const methodOverride = require('method-override')
 
 
 
@@ -13,7 +14,8 @@ const uuid = require('uuid/v4');
 let a = uuid();
 let b = uuid();
 
-//setting express to use body parser and cookie session, as well as setting the view engine as ejs
+//setting express to use body parser, cookie session and method override, as well as setting the view engine as ejs
+app.use(methodOverride('_method'))
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 app.use(cookieSession({
@@ -76,7 +78,7 @@ app.get("/urls", (req, res) => {
 app.post("/urls", (req, res) => {
   if (req.session.user) {  //checks whether logged in
     console.log(req.body);  
-    let a = generateRandomString();
+    const a = generateRandomString();
     urlDatabase[a] = {};
     
     //wanted to allow input of https://www.example.ca and www.example.ca and example.ca, and create proper input of https://www.example.ca
@@ -153,7 +155,7 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 //allows a user to delete a short URL from the database, if they are the creator
-app.post("/urls/:shortURL/delete", (req, res) => {
+app.delete("/urls/:shortURL/delete", (req, res) => {
   if (req.session.user) { //checks if user is logged in
     if (req.session.user.id === urlDatabase[req.params.shortURL].userID) { //checks is user is creator
       delete urlDatabase[req.params.shortURL];
@@ -175,7 +177,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 //if a user is the creator of the short URL, allows them to edit the short URL to refer to a different long URL
-app.post("/urls/:shortURL", (req, res) => {
+app.put("/urls/:shortURL", (req, res) => {
   if (req.session.user) {
     if (req.session.user.id === urlDatabase[req.params.shortURL].userID) {
       urlDatabase[req.params.shortURL].longURL = req.body.longURL;
