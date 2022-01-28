@@ -97,7 +97,6 @@ app.get("/urls", (req, res) => {
 //adds a url to the database if the user is logged in
 app.post("/urls", (req, res) => {
   if (req.session.user) {  //checks whether logged in
-    console.log(req.body);  
     const a = generateRandomString();
     urlDatabase[a] = {};
     
@@ -173,8 +172,6 @@ app.get("/urls/:shortURL", (req, res) => {
     };
     res.render("urls_show", templateVars);
   } else { // registered user is not creator, therefore error message is displayed
-    console.log(req.session.user.id);
-    console.log(urlDatabase[req.params.shortURL].userID);
     const templateVars = {
       errorStatus:'403 Forbidden',
       errorMessage: 'You can not edit another user\'s tinyURL!',
@@ -211,8 +208,6 @@ app.delete("/urls/:shortURL/delete", (req, res) => {
       delete urlDatabase[req.params.shortURL];
       res.redirect("http://localhost:8080/urls");
     } else {
-      // console.log(req.session.user);
-      // console.log(urlDatabase[req.params.shortURL]);
       const templateVars = {
         errorStatus:'403 Forbidden',
         errorMessage: 'You can not delete another user\'s tinyURL!',
@@ -337,7 +332,6 @@ app.post("/register", (req, res) => {
   users[a] = req.body;
   users[a]["id"] = a;
   users[a]["visitorID"] = b
-  console.log(users);
   if (req.body.loginNow === 'on') {
     req.session["user"] = users[a];
   }

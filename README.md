@@ -6,6 +6,8 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 !["A picture of the analytics/edit page"](https://github.com/joevalook/tinyapp/blob/master/docs/Analytics.png?raw=true)
 
+!["A picture of the error page"](https://github.com/joevalook/tinyapp/blob/master/docs/errorPage.png?raw=true)
+
 !["A picture of the register page"](https://github.com/joevalook/tinyapp/blob/master/docs/register.png?raw=true)
 
 !["a picture of the user's URLs page"](https://github.com/joevalook/tinyapp/blob/master/docs/myUrl.png?raw=true)
