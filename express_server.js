@@ -75,11 +75,6 @@ app.get("/", (req, res) => {
   }
 });
 
-// home page
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
-});
-
 //displays urlsDatabase in JSON format
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
@@ -290,7 +285,7 @@ app.post("/login", (req, res) => {
 
 // logs out user via clearing cookie data
 app.post("/logout", (req, res) => {
-  req.session.user = null; 
+  req.session = null; 
   res.redirect("http://localhost:8080/urls");
 });
 
@@ -337,4 +332,8 @@ app.post("/register", (req, res) => {
   }
   res.redirect("http://localhost:8080/urls");
 
+});
+
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}!`);
 });
